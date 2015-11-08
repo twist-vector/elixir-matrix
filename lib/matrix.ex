@@ -260,6 +260,8 @@ defmodule Matrix do
     Enum.zip(x, y) |> Enum.map( fn({a,b})->emult_rows(a,b) end )
   end
 
+
+
   @doc """
     Returns a new matrix which is the linear algebra matrix multiply
     of the provided matrices.
@@ -286,6 +288,7 @@ defmodule Matrix do
   end
 
 
+
   @doc """
   Returns a new matrix whose elements are the transpose of the supplied matrix.
   The transpose essentially swaps rows for columns - that is, the first row
@@ -299,6 +302,7 @@ defmodule Matrix do
   def transpose(cells) do
     swap_rows_cols(cells)
   end
+
 
 
   @doc """
@@ -317,13 +321,14 @@ defmodule Matrix do
   @spec inv(matrix) :: matrix
   def inv(x) do
     {rows,_cols} = size(x)
-    y = reduce( supplement(x,ident(rows)) )
+    y = row_reduce( supplement(x,ident(rows)) )
 
     {yl,yr} = desupplement(y)
     z = supplement( full_flip(yl), full_flip(yr) )
-    {_zzl,zzr} = desupplement( reduce(z) )
+    {_zzl,zzr} = desupplement( row_reduce(z) )
     full_flip(zzr)
   end
+
 
 
   @doc """
@@ -337,6 +342,7 @@ defmodule Matrix do
       iex> Matrix.prefix_rows( Matrix.seq(2,2), 10 )
       [[10, 1, 2], [10, 3, 4]]
   """
+  @spec prefix_rows(matrix, number) :: matrix
   def prefix_rows(x, val) do
     Enum.map(x, fn(r) -> [val]++r end)
   end
@@ -353,8 +359,88 @@ defmodule Matrix do
       iex> Matrix.postfix_rows( Matrix.seq(2,2), 10 )
       [[1, 2, 10], [3, 4, 10]]
   """
+  @spec postfix_rows(matrix, number) :: matrix
   def postfix_rows(x, val) do
     Enum.map(x, fn(r) -> r++[val] end)
+  end
+
+
+  @doc """
+  Compares two matrices as being (approximately) equal.  Since floating point
+  numbers have slightly different representations and accuracies on different
+  architectures it is generally not a good idea to compare them directly.
+  Rather numbers are considered equal if they are within an "epsilon" of each
+  other.  *almost_equal* compares all elements of two matrices, returning true
+  if all elements are within the provided epsilon.
+
+  #### Examples
+      iex> Matrix.almost_equal( [[1.00001, 0], [0, 0.999999]], [[1,0], [0,1]], 1.0e-6 )
+      false
+
+      iex> Matrix.almost_equal( [[1.00001, 0], [0, 0.999999]], [[1,0], [0,1]], 1.0e-3 )
+      true
+  """
+  @spec almost_equal(matrix, matrix, number) :: matrix
+  def almost_equal(x, y, eps) do
+    x = Enum.zip(x,y)
+        |> Enum.map(fn({r1,r2})->rows_almost_equal(r1, r2, eps) end)
+    Enum.all?(x)
+  end
+
+
+  @doc """
+  Returns a new matrix whose elements are the elements of matrix x multiplied by
+  the scale factor "s".
+
+  #### Examples
+      iex> Matrix.scale( Matrix.ident(3), 2 )
+      [[2,0,0], [0,2,0], [0,0,2]]
+
+      iex> Matrix.scale( Matrix.ones(3,4), -2 )
+      [[-2, -2, -2, -2], [-2, -2, -2, -2], [-2, -2, -2, -2]]
+  """
+  @spec scale(matrix, number) :: matrix
+  def scale(x, s) do
+    Enum.map(x, fn(r)->scale_row(r,s) end)
+  end
+
+
+  @doc """
+  Returns a string which is a "pretty" representation of the supplied
+  matrix.
+  """
+  @spec pretty_print(matrix, char_list, char_list) :: atom
+  def pretty_print(m, fmt\\"%d", sep\\"") do
+    str = m
+    |> Enum.map(fn(r)->show_row(r,fmt,sep) <> "\n" end)
+    |> Enum.join("")
+    IO.puts(str)
+  end
+
+
+  @doc """
+  Returns the Kronecker tensor product of two matrices A and B. If A is an
+  MxN and B is PxQ, then the returned matrix is an (M*P)x(N*Q) matrix formed
+  by taking all possible products between the elements of A and the matrix B.
+
+  <pre>A = |1000|      B = |  1 -1|
+      |0100|          | -1  1|
+      |0010|
+      |0001|                  </pre>
+
+  then <pre>     kron(A,B) = |  1 -1  0  0  0  0  0  0|
+                   | -1  1  0  0  0  0  0  0|
+                   |  0  0  1 -1  0  0  0  0|
+                   |  0  0 -1  1  0  0  0  0|
+                   |  0  0  0  0  1 -1  0  0|
+                   |  0  0  0  0 -1  1  0  0|
+                   |  0  0  0  0  0  0  1 -1|
+                   |  0  0  0  0  0  0 -1  1|</pre>
+  """
+  @spec kron(matrix, matrix) :: matrix
+  def kron([], _b), do: []
+  def kron([h|t], b) do
+    row_embed(h, b, [])++kron(t, b)
   end
 
 
@@ -371,7 +457,7 @@ defmodule Matrix do
   # comprehension or Enum.map, at least using Erlang/OTP 18 and Elixir 1.1.1
   #
   defp make_row(n, val) do
-    # The was found to be slower than the recursive call
+    # This was found to be slower than the recursive call
     #for _r <- 1..n, do: val
     add_row_element([],n,val)
   end
@@ -438,7 +524,7 @@ defmodule Matrix do
   # supplied lists.  Presumably r1 and r2 are rows of a matrix.
   #
   defp dot_product(r1, r2) do
-    Stream.zip(r1, r2)
+    Enum.zip(r1, r2)
     |> Enum.map(fn({x, y}) -> x * y end)
     |> Enum.sum
   end
@@ -455,6 +541,7 @@ defmodule Matrix do
   #      x = |1 2 1 0|
   #          |3 4 0 1|
   #
+  defp supplement([],y), do: y
   defp supplement(x,y) do
     Enum.zip(x,y)
     |> Enum.map(fn({r1,r2}) -> r1++r2 end)
@@ -487,19 +574,18 @@ defmodule Matrix do
   # Uses elementary row operations to reduce the supplied matrix to row echelon
   # form.  This is the first step of matrix inversion using Gaussian elimination.
   #
-  defp reduce([]), do: []
-  defp reduce(rows) do
-    crows = rows
-    firsts = Enum.map(crows, fn(x) -> hd(x) end) # first element of each row
+  defp row_reduce([]), do: []
+  defp row_reduce(rows) do
+    firsts = Enum.map(rows, fn(x) -> hd(x) end) # first element of each row
     s = hd(firsts)
     y = if abs(s)<1.0e-10 do
-          scale_row(hd(crows), 1)
+          scale_row(hd(rows), 1)
         else
-          scale_row(hd(crows), 1/s)
+          scale_row(hd(rows), 1/s)
         end
 
-    first_rest = Enum.map(tl(crows), fn(x) -> hd(x) end)
-    z = Enum.zip(tl(crows),first_rest)
+    first_rest = Enum.map(tl(rows), fn(x) -> hd(x) end)
+    z = Enum.zip(tl(rows),first_rest)
         |> Enum.map(fn({r,v}) ->
                       if abs(v)<1.0e-10 do
                         tl(r)
@@ -508,7 +594,7 @@ defmodule Matrix do
                       end
                     end)
 
-    [y] ++ prefix_rows(reduce(z), 0)
+    [y] ++ prefix_rows(row_reduce(z), 0)
   end
 
   #
@@ -525,21 +611,37 @@ defmodule Matrix do
   #
   # The following functions are used for floating point comparison of matrices.
   #
-  # Compares two matrices as being (approximately) equal.
-  def almost_equal(x, y, eps) do
-    x = Enum.zip(x,y)
-        |> Enum.map(fn({r1,r2})->rows_almost_equal(r1, r2, eps) end)
-    Enum.all?(x)
-  end
   # Compares two rows as being (approximately) equal.
-  def rows_almost_equal(r1, r2, eps) do
+  defp rows_almost_equal(r1, r2, eps) do
     x = Enum.zip(r1,r2)
         |> Enum.map(fn({x,y})->vals_almost_equal(x, y, eps) end)
     Enum.all?(x)
   end
   # Compares two floats as being (approximately) equal.
-  def vals_almost_equal(x, y, eps) do
+  defp vals_almost_equal(x, y, eps) do
     abs(x-y) < eps
+  end
+
+
+  #
+  # Embed the supplied matrix into a "row" matrix.  Each instance of the embedded
+  # matrix is scaled by the element of r
+  #
+  defp row_embed([], _b, macc), do: macc
+  defp row_embed(r, b, macc) do
+    s = hd(r)
+    row_embed( tl(r), b, supplement(macc,scale(b,s)) )
+  end
+
+
+  #
+  # Pretty prints the values in a supplied row.
+  #
+  defp show_row(r, fmt, sep) do
+    str = r
+    |> Enum.map(fn(e)->ExPrintf.sprintf(fmt, [e]) end)
+    |> Enum.join(sep)
+    "|" <> str <> "|"
   end
 
 end

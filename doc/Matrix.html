@@ -136,6 +136,20 @@ the provided matrices</p>
 </div>
 <div class="summary-row">
   <div class="summary-signature">
+    <a href="#almost_equal/3">almost_equal(x, y, eps)</a>
+  </div>
+  
+    <div class="summary-synopsis"><p>Compares two matrices as being (approximately) equal.  Since floating point
+numbers have slightly different representations and accuracies on different
+architectures it is generally not a good idea to compare them directly.
+Rather numbers are considered equal if they are within an “epsilon” of each
+other.  <em>almost_equal</em> compares all elements of two matrices, returning true
+if all elements are within the provided epsilon</p>
+</div>
+  
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
     <a href="#elem/3">elem(x, row, col)</a>
   </div>
   
@@ -171,6 +185,24 @@ parameter is required</p>
   <div class="summary-signature">
     <a href="#inv/1">inv(x)</a>
   </div>
+  
+    <div class="summary-synopsis"><p>Returns a new matrix which is the (linear algebra) inverse of the supplied
+matrix.  If the supplied matrix is “x” then, by definition,</p>
+<pre><code class="elixir">x * inv(x) = I</code></pre>
+<p>where I is the identity matrix.  This function uses a brute force Gaussian
+elimination so it is not expected to be terribly fast</p>
+</div>
+  
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="#kron/2">kron(list, b)</a>
+  </div>
+  
+    <div class="summary-synopsis"><p>Returns the Kronecker tensor product of two matrices A and B. If A is an
+MxN and B is PxQ, then the returned matrix is an (M<em>P)x(N</em>Q) matrix formed
+by taking all possible products between the elements of A and the matrix B</p>
+</div>
   
 </div>
 <div class="summary-row">
@@ -226,12 +258,32 @@ but with the supplied value appended to the beginning of each row</p>
 </div>
 <div class="summary-row">
   <div class="summary-signature">
+    <a href="#pretty_print/3">pretty_print(m, fmt \\ &quot;%d&quot;, sep \\ &quot;&quot;)</a>
+  </div>
+  
+    <div class="summary-synopsis"><p>Returns a string which is a “pretty” representation of the supplied
+matrix</p>
+</div>
+  
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
     <a href="#rand/2">rand(rows, cols)</a>
   </div>
   
     <div class="summary-synopsis"><p>Returns a new matrix of the specified size (number of rows and columns).
 All elements of the matrix are filled with uniformly distributed random
 numbers between 0 and 1</p>
+</div>
+  
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="#scale/2">scale(x, s)</a>
+  </div>
+  
+    <div class="summary-synopsis"><p>Returns a new matrix whose elements are the elements of matrix x multiplied by
+the scale factor “s”</p>
 </div>
   
 </div>
@@ -367,6 +419,40 @@ the provided matrices.</p>
 
   </section>
 </div>
+<div class="detail" id="almost_equal/3">
+  <div class="detail-header">
+    <a href="#almost_equal/3" class="detail-link" title="Link to this function">
+      <i class="icon-link"></i>
+    </a>
+    <span class="signature">almost_equal(x, y, eps)</span>
+      
+  </div>
+  
+    <div class="specs">
+      <h4 class="specs-title">Specs</h4>
+      <div class="specs-list">
+        
+          <pre><code class="elixir">almost_equal(<a href="#t:matrix/0">matrix</a>, <a href="#t:matrix/0">matrix</a>, number) :: <a href="#t:matrix/0">matrix</a></code></pre>
+        
+      </div>
+    </div>
+  
+  <section class="docstring">
+    <p>Compares two matrices as being (approximately) equal.  Since floating point
+numbers have slightly different representations and accuracies on different
+architectures it is generally not a good idea to compare them directly.
+Rather numbers are considered equal if they are within an “epsilon” of each
+other.  <em>almost_equal</em> compares all elements of two matrices, returning true
+if all elements are within the provided epsilon.</p>
+<h4>Examples</h4>
+<pre><code class="iex elixir">iex&gt; Matrix.almost_equal( [[1.00001, 0], [0, 0.999999]], [[1,0], [0,1]], 1.0e-6 )
+false
+
+iex&gt; Matrix.almost_equal( [[1.00001, 0], [0, 0.999999]], [[1,0], [0,1]], 1.0e-3 )
+true</code></pre>
+
+  </section>
+</div>
 <div class="detail" id="elem/3">
   <div class="detail-header">
     <a href="#elem/3" class="detail-link" title="Link to this function">
@@ -466,8 +552,66 @@ parameter is required.</p>
       
   </div>
   
+    <div class="specs">
+      <h4 class="specs-title">Specs</h4>
+      <div class="specs-list">
+        
+          <pre><code class="elixir">inv(<a href="#t:matrix/0">matrix</a>) :: <a href="#t:matrix/0">matrix</a></code></pre>
+        
+      </div>
+    </div>
+  
   <section class="docstring">
-    
+    <p>Returns a new matrix which is the (linear algebra) inverse of the supplied
+matrix.  If the supplied matrix is “x” then, by definition,</p>
+<pre><code class="elixir">x * inv(x) = I</code></pre>
+<p>where I is the identity matrix.  This function uses a brute force Gaussian
+elimination so it is not expected to be terribly fast.</p>
+<h4>Examples</h4>
+<p>  iex&gt; x = Matrix.rand(5,5)
+  iex&gt; res = Matrix.mult( x, Matrix.inv(x) )
+  iex&gt; Matrix.almost_equal(res,[[1,0,0],[0,1,0],[0,0,1]],1.0e-10)
+  true</p>
+
+  </section>
+</div>
+<div class="detail" id="kron/2">
+  <div class="detail-header">
+    <a href="#kron/2" class="detail-link" title="Link to this function">
+      <i class="icon-link"></i>
+    </a>
+    <span class="signature">kron(list, b)</span>
+      
+  </div>
+  
+    <div class="specs">
+      <h4 class="specs-title">Specs</h4>
+      <div class="specs-list">
+        
+          <pre><code class="elixir">kron(<a href="#t:matrix/0">matrix</a>, <a href="#t:matrix/0">matrix</a>) :: <a href="#t:matrix/0">matrix</a></code></pre>
+        
+      </div>
+    </div>
+  
+  <section class="docstring">
+    <p>Returns the Kronecker tensor product of two matrices A and B. If A is an
+MxN and B is PxQ, then the returned matrix is an (M<em>P)x(N</em>Q) matrix formed
+by taking all possible products between the elements of A and the matrix B.</p>
+<pre>A = |1000|      B = |  1 -1|
+    |0100|          | -1  1|
+    |0010|
+    |0001|                  </pre>
+
+then <pre>     kron(A,B) = |  1 -1  0  0  0  0  0  0|
+                 | -1  1  0  0  0  0  0  0|
+                 |  0  0  1 -1  0  0  0  0|
+                 |  0  0 -1  1  0  0  0  0|
+                 |  0  0  0  0  1 -1  0  0|
+                 |  0  0  0  0 -1  1  0  0|
+                 |  0  0  0  0  0  0  1 -1|
+                 |  0  0  0  0  0  0 -1  1|</pre>
+
+
   </section>
 </div>
 <div class="detail" id="mult/2">
@@ -576,6 +720,15 @@ All elements of the matrix are filled with the ones.</p>
       
   </div>
   
+    <div class="specs">
+      <h4 class="specs-title">Specs</h4>
+      <div class="specs-list">
+        
+          <pre><code class="elixir">postfix_rows(<a href="#t:matrix/0">matrix</a>, number) :: <a href="#t:matrix/0">matrix</a></code></pre>
+        
+      </div>
+    </div>
+  
   <section class="docstring">
     <p>Returns a new matrix whose elements are identical to the supplied matrix x
 but with the supplied value appended to the end of each row.</p>
@@ -596,6 +749,15 @@ but with the supplied value appended to the end of each row.</p>
       
   </div>
   
+    <div class="specs">
+      <h4 class="specs-title">Specs</h4>
+      <div class="specs-list">
+        
+          <pre><code class="elixir">prefix_rows(<a href="#t:matrix/0">matrix</a>, number) :: <a href="#t:matrix/0">matrix</a></code></pre>
+        
+      </div>
+    </div>
+  
   <section class="docstring">
     <p>Returns a new matrix whose elements are identical to the supplied matrix x
 but with the supplied value appended to the beginning of each row.</p>
@@ -604,6 +766,30 @@ but with the supplied value appended to the beginning of each row.</p>
 <h4>Examples</h4>
 <pre><code class="iex elixir">iex&gt; Matrix.prefix_rows( Matrix.seq(2,2), 10 )
 [[10, 1, 2], [10, 3, 4]]</code></pre>
+
+  </section>
+</div>
+<div class="detail" id="pretty_print/3">
+  <div class="detail-header">
+    <a href="#pretty_print/3" class="detail-link" title="Link to this function">
+      <i class="icon-link"></i>
+    </a>
+    <span class="signature">pretty_print(m, fmt \\ &quot;%d&quot;, sep \\ &quot;&quot;)</span>
+      
+  </div>
+  
+    <div class="specs">
+      <h4 class="specs-title">Specs</h4>
+      <div class="specs-list">
+        
+          <pre><code class="elixir">pretty_print(<a href="#t:matrix/0">matrix</a>, char_list, char_list) :: atom</code></pre>
+        
+      </div>
+    </div>
+  
+  <section class="docstring">
+    <p>Returns a string which is a “pretty” representation of the supplied
+matrix.</p>
 
   </section>
 </div>
@@ -637,6 +823,36 @@ iex&gt; Matrix.rand(3,3)
  [0.7021763747372531, 0.5537966721193639, 0.1607491687700906]]</code></pre>
 <h4>See also</h4>
 <p><a href="#new/3">new/3</a>, <a href="#ones/2">ones/2</a>, <a href="#zeros/2">zeros/2</a></p>
+
+  </section>
+</div>
+<div class="detail" id="scale/2">
+  <div class="detail-header">
+    <a href="#scale/2" class="detail-link" title="Link to this function">
+      <i class="icon-link"></i>
+    </a>
+    <span class="signature">scale(x, s)</span>
+      
+  </div>
+  
+    <div class="specs">
+      <h4 class="specs-title">Specs</h4>
+      <div class="specs-list">
+        
+          <pre><code class="elixir">scale(<a href="#t:matrix/0">matrix</a>, number) :: <a href="#t:matrix/0">matrix</a></code></pre>
+        
+      </div>
+    </div>
+  
+  <section class="docstring">
+    <p>Returns a new matrix whose elements are the elements of matrix x multiplied by
+the scale factor “s”.</p>
+<h4>Examples</h4>
+<pre><code class="iex elixir">iex&gt; Matrix.scale( Matrix.ident(3), 2 )
+[[2,0,0], [0,2,0], [0,0,2]]
+
+iex&gt; Matrix.scale( Matrix.ones(3,4), -2 )
+[[-2, -2, -2, -2], [-2, -2, -2, -2], [-2, -2, -2, -2]]</code></pre>
 
   </section>
 </div>
