@@ -5,9 +5,10 @@ defmodule Matrix.Mixfile do
     [app: :matrix,
      version: "0.0.1",
      elixir: "~> 1.1",
-     build_embedded: Mix.env == :prod,
-     start_permanent: Mix.env == :prod,
-     deps: deps]
+     build_embedded: Mix.env == :dev,
+     start_permanent: Mix.env == :dev,
+     deps: deps,
+     docs: [extras: []]]
   end
 
   # Configuration for the OTP application
@@ -27,6 +28,7 @@ defmodule Matrix.Mixfile do
   #
   # Type "mix help deps" for more examples and options
   defp deps do
-    []
+    [{:earmark, "~> 0.1"},
+     {:ex_doc, github: "elixir-lang/ex_doc"}]
   end
 end
