@@ -4,10 +4,9 @@ defmodule Matrix.Mixfile do
   def project do
     [app: :matrix,
      version: "0.3.0",
-     description: "",
+     description: description,
+     package: package,
      elixir: "~> 1.1",
-     build_embedded: Mix.env == :dev,
-     start_permanent: Mix.env == :dev,
      deps: deps,
      docs: [extras: []]]
   end
@@ -19,18 +18,25 @@ defmodule Matrix.Mixfile do
     [applications: [:logger]]
   end
 
-  # Dependencies can be Hex packages:
-  #
-  #   {:mydep, "~> 0.3.0"}
-  #
-  # Or git/path repositories:
-  #
-  #   {:mydep, git: "https://github.com/elixir-lang/mydep.git", tag: "0.1.0"}
-  #
-  # Type "mix help deps" for more examples and options
   defp deps do
     [{:earmark, "~> 0.1"},
      {:ex_doc, github: "elixir-lang/ex_doc"},
      {:exprintf, "~> 0.1"}]
   end
+
+  defp description do
+    """
+    Matrix is a linear algebra library for manipulating dense matrices. Its
+    primary design goal is ease of use.
+    """
+  end
+
+  defp package do
+    [# These are the default files included in the package
+     maintainers: ["Tom Krauss"],
+     licenses: ["Apache 2.0"],
+     links: %{"GitHub" => "https://github.com/ericmj/postgrex",
+              "Docs" => "http://ericmj.github.io/postgrex/"}]
+  end
+
 end
