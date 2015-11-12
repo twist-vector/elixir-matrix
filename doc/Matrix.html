@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Matrix – matrix v0.0.1</title>
+    <title>Matrix – matrix v0.3.0</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.10.1-dev">
     <link rel="stylesheet" href="dist/app-bb6b3af095.css" />
@@ -28,7 +28,7 @@
         matrix
       </h1>
       <h2 class="sidebar-projectVersion">
-        v0.0.1
+        v0.3.0
       </h2>
     </div>
     
@@ -60,7 +60,7 @@
 
 
       <h1>
-        <small class="visible-xs">matrix v0.0.1</small>
+        <small class="visible-xs">matrix v0.3.0</small>
         Matrix
         
         
@@ -69,13 +69,14 @@
       
         <section id="moduledoc" class="docstring">
           <p><em>Matrix</em> is a linear algebra library for manipulating dense matrices. Its
-design goals are to be reasonably efficient in terms of both memory usage and
-computations.  Unfortunately there is a trade off between memory efficiency
-and computational efficiency.  Where these requirements conflict <em>Matrix</em>
-will use the more computationally efficient algorithm.</p>
-<p>A secondary design consideration is for ease of use.  It is desirable that the
-<em>Matrix</em> package interact with standard Elixir language constructs and other
-packages.  The underlying storage mechanism is, therefore, Elixir lists.</p>
+primary design goal is ease of use.  It is desirable that the <em>Matrix</em> package
+interact with standard Elixir language constructs and other packages.  The
+underlying storage mechanism is, therefore, Elixir lists.</p>
+<p>A secondary design consideration is for the module to be reasonably efficient
+in terms of both memory usage and computations.  Unfortunately there is a
+trade off between memory efficiency and computational efficiency.  Where these
+requirements conflict <em>Matrix</em> will use the more computationally efficient
+algorithm.</p>
 <p>Each matrix is represented as a “list of lists” whereby a 3x4 matrix is
 represented by a list of three items, with each item a list of 4 values.
 Constructors are provided for several common matrix configurations including
@@ -136,7 +137,7 @@ the provided matrices</p>
 </div>
 <div class="summary-row">
   <div class="summary-signature">
-    <a href="#almost_equal/3">almost_equal(x, y, eps)</a>
+    <a href="#almost_equal/2">almost_equal(x, y)</a>
   </div>
   
     <div class="summary-synopsis"><p>Compares two matrices as being (approximately) equal.  Since floating point
@@ -150,10 +151,30 @@ if all elements are within the provided epsilon</p>
 </div>
 <div class="summary-row">
   <div class="summary-signature">
+    <a href="#close_enough?/4">close_enough?(a, b, epsilon, max_ulps)</a>
+  </div>
+  
+    <div class="summary-synopsis"><p>Code borrowed from the ExMath library and duplicated here to reduce
+dependencies.  ExMath is copyright © 2015 Ookami Kenrou <a href="mailto:ookamikenrou@gmail.com">ookamikenrou@gmail.com</a></p>
+</div>
+  
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="#diag/1">diag(d)</a>
+  </div>
+  
+    <div class="summary-synopsis"><p>Returns a new square “diagonal” matrix whose elements are zero except for
+the diagonal.  The diagonal elements will be composed of the supplied list</p>
+</div>
+  
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
     <a href="#elem/3">elem(x, row, col)</a>
   </div>
   
-    <div class="summary-synopsis"><p>Returns a value of the specified element  (row and column) of the given
+    <div class="summary-synopsis"><p>Returns the value of the specified element (row and column) of the given
 matrix (x).  The row and column indices are zero-based</p>
 </div>
   
@@ -203,6 +224,24 @@ elimination so it is not expected to be terribly fast</p>
 MxN and B is PxQ, then the returned matrix is an (M<em>P)x(N</em>Q) matrix formed
 by taking all possible products between the elements of A and the matrix B</p>
 </div>
+  
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="#lrotate/2">lrotate(list, number)</a>
+  </div>
+  
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="#make_random_row/1">make_random_row(n)</a>
+  </div>
+  
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="#make_row/2">make_row(n, val)</a>
+  </div>
   
 </div>
 <div class="summary-row">
@@ -279,6 +318,12 @@ numbers between 0 and 1</p>
 </div>
 <div class="summary-row">
   <div class="summary-signature">
+    <a href="#rrotate/2">rrotate(list, number)</a>
+  </div>
+  
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
     <a href="#scale/2">scale(x, s)</a>
   </div>
   
@@ -330,13 +375,19 @@ the elements of the provided matrices</p>
 </div>
 <div class="summary-row">
   <div class="summary-signature">
-    <a href="#transpose/1">transpose(cells)</a>
+    <a href="#transpose/1">transpose(m)</a>
   </div>
   
     <div class="summary-synopsis"><p>Returns a new matrix whose elements are the transpose of the supplied matrix.
 The transpose essentially swaps rows for columns - that is, the first row
 becomes the first column, the second row becomes the second column, etc</p>
 </div>
+  
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="#ulp_diff/2">ulp_diff(a, b)</a>
+  </div>
   
 </div>
 <div class="summary-row">
@@ -419,12 +470,12 @@ the provided matrices.</p>
 
   </section>
 </div>
-<div class="detail" id="almost_equal/3">
+<div class="detail" id="almost_equal/2">
   <div class="detail-header">
-    <a href="#almost_equal/3" class="detail-link" title="Link to this function">
+    <a href="#almost_equal/2" class="detail-link" title="Link to this function">
       <i class="icon-link"></i>
     </a>
-    <span class="signature">almost_equal(x, y, eps)</span>
+    <span class="signature">almost_equal(x, y)</span>
       
   </div>
   
@@ -432,7 +483,7 @@ the provided matrices.</p>
       <h4 class="specs-title">Specs</h4>
       <div class="specs-list">
         
-          <pre><code class="elixir">almost_equal(<a href="#t:matrix/0">matrix</a>, <a href="#t:matrix/0">matrix</a>, number) :: <a href="#t:matrix/0">matrix</a></code></pre>
+          <pre><code class="elixir">almost_equal(<a href="#t:matrix/0">matrix</a>, <a href="#t:matrix/0">matrix</a>) :: <a href="#t:matrix/0">matrix</a></code></pre>
         
       </div>
     </div>
@@ -445,11 +496,67 @@ Rather numbers are considered equal if they are within an “epsilon” of each
 other.  <em>almost_equal</em> compares all elements of two matrices, returning true
 if all elements are within the provided epsilon.</p>
 <h4>Examples</h4>
-<pre><code class="iex elixir">iex&gt; Matrix.almost_equal( [[1.00001, 0], [0, 0.999999]], [[1,0], [0,1]], 1.0e-6 )
+<pre><code class="iex elixir">iex&gt; Matrix.almost_equal( [[1, 0], [0, 1]], [[1,0], [0,1+1.0e-12]] )
 false
 
-iex&gt; Matrix.almost_equal( [[1.00001, 0], [0, 0.999999]], [[1,0], [0,1]], 1.0e-3 )
+iex&gt; Matrix.almost_equal( [[1, 0], [0, 1]], [[1,0], [0,1+0.5e-12]] )
 true</code></pre>
+
+  </section>
+</div>
+<div class="detail" id="close_enough?/4">
+  <div class="detail-header">
+    <a href="#close_enough?/4" class="detail-link" title="Link to this function">
+      <i class="icon-link"></i>
+    </a>
+    <span class="signature">close_enough?(a, b, epsilon, max_ulps)</span>
+      
+  </div>
+  
+    <div class="specs">
+      <h4 class="specs-title">Specs</h4>
+      <div class="specs-list">
+        
+          <pre><code class="elixir">close_enough?(number, number, number, non_neg_integer) :: boolean</code></pre>
+        
+      </div>
+    </div>
+  
+  <section class="docstring">
+    <p>Code borrowed from the ExMath library and duplicated here to reduce
+dependencies.  ExMath is copyright © 2015 Ookami Kenrou <a href="mailto:ookamikenrou@gmail.com">ookamikenrou@gmail.com</a></p>
+<p>Equality comparison for floating point numbers, based on
+<a href="https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/">this blog post</a>
+by Bruce Dawson.</p>
+
+  </section>
+</div>
+<div class="detail" id="diag/1">
+  <div class="detail-header">
+    <a href="#diag/1" class="detail-link" title="Link to this function">
+      <i class="icon-link"></i>
+    </a>
+    <span class="signature">diag(d)</span>
+      
+  </div>
+  
+    <div class="specs">
+      <h4 class="specs-title">Specs</h4>
+      <div class="specs-list">
+        
+          <pre><code class="elixir">diag([number]) :: <a href="#t:matrix/0">matrix</a></code></pre>
+        
+      </div>
+    </div>
+  
+  <section class="docstring">
+    <p>Returns a new square “diagonal” matrix whose elements are zero except for
+the diagonal.  The diagonal elements will be composed of the supplied list</p>
+<h4>See also</h4>
+<p><a href="#new/3">new/3</a>, <a href="#ones/2">ones/2</a>, <a href="#ident/1">ident/1</a></p>
+<h4>Examples</h4>
+<pre><code class="iex elixir">iex&gt; Matrix.diag([1,2,3])
+[[1, 0, 0], [0, 2, 0], [0, 0, 3]]</code></pre>
 
   </section>
 </div>
@@ -472,7 +579,7 @@ true</code></pre>
     </div>
   
   <section class="docstring">
-    <p>Returns a value of the specified element  (row and column) of the given
+    <p>Returns the value of the specified element (row and column) of the given
 matrix (x).  The row and column indices are zero-based.</p>
 <h4>See also</h4>
 <p><a href="#set/4">set/4</a></p>
@@ -536,7 +643,7 @@ defined as a square matrix with ones on the diagonal and zeros in all
 off-diagonal elements.  Since the matrix is square only a single size
 parameter is required.</p>
 <h4>See also</h4>
-<p><a href="#new/3">new/3</a>, <a href="#ones/2">ones/2</a>, <a href="#rand/2">rand/2</a></p>
+<p><a href="#diag/1">diag/1</a>, <a href="#ones/2">ones/2</a>, <a href="#rand/2">rand/2</a></p>
 <h4>Examples</h4>
 <pre><code class="iex elixir">iex&gt; Matrix.ident(3)
 [[1, 0, 0], [0, 1, 0], [0, 0, 1]]</code></pre>
@@ -570,7 +677,7 @@ elimination so it is not expected to be terribly fast.</p>
 <h4>Examples</h4>
 <p>  iex&gt; x = Matrix.rand(5,5)
   iex&gt; res = Matrix.mult( x, Matrix.inv(x) )
-  iex&gt; Matrix.almost_equal(res,[[1,0,0],[0,1,0],[0,0,1]],1.0e-10)
+  iex&gt; Matrix.almost_equal(res,[[1,0,0],[0,1,0],[0,0,1]])
   true</p>
 
   </section>
@@ -614,6 +721,45 @@ then <pre>     kron(A,B) = |  1 -1  0  0  0  0  0  0|
 
   </section>
 </div>
+<div class="detail" id="lrotate/2">
+  <div class="detail-header">
+    <a href="#lrotate/2" class="detail-link" title="Link to this function">
+      <i class="icon-link"></i>
+    </a>
+    <span class="signature">lrotate(list, number)</span>
+      
+  </div>
+  
+  <section class="docstring">
+    
+  </section>
+</div>
+<div class="detail" id="make_random_row/1">
+  <div class="detail-header">
+    <a href="#make_random_row/1" class="detail-link" title="Link to this function">
+      <i class="icon-link"></i>
+    </a>
+    <span class="signature">make_random_row(n)</span>
+      
+  </div>
+  
+  <section class="docstring">
+    
+  </section>
+</div>
+<div class="detail" id="make_row/2">
+  <div class="detail-header">
+    <a href="#make_row/2" class="detail-link" title="Link to this function">
+      <i class="icon-link"></i>
+    </a>
+    <span class="signature">make_row(n, val)</span>
+      
+  </div>
+  
+  <section class="docstring">
+    
+  </section>
+</div>
 <div class="detail" id="mult/2">
   <div class="detail-header">
     <a href="#mult/2" class="detail-link" title="Link to this function">
@@ -639,13 +785,7 @@ of the provided matrices.</p>
 <p><a href="#emult/2">emult/2</a></p>
 <h4>Examples</h4>
 <pre><code class="iex elixir">iex&gt; Matrix.mult( Matrix.seq(2,2), Matrix.seq(2,2) )
-[[7, 10], [15, 22]]
-
-iex&gt; _ = :random.seed(12345)
-iex&gt; Matrix.mult( Matrix.rand(3,3), Matrix.rand(3,3) )
-[[1.0381005406028176, 0.7212441594338046, 0.9307137121837732],
- [0.6255442219186653, 0.4956710926346579, 0.574699071565491],
- [0.66479248303266, 0.7764927657589071, 1.0048634412082678]]</code></pre>
+[[7, 10], [15, 22]]</code></pre>
 
   </section>
 </div>
@@ -826,6 +966,19 @@ iex&gt; Matrix.rand(3,3)
 
   </section>
 </div>
+<div class="detail" id="rrotate/2">
+  <div class="detail-header">
+    <a href="#rrotate/2" class="detail-link" title="Link to this function">
+      <i class="icon-link"></i>
+    </a>
+    <span class="signature">rrotate(list, number)</span>
+      
+  </div>
+  
+  <section class="docstring">
+    
+  </section>
+</div>
 <div class="detail" id="scale/2">
   <div class="detail-header">
     <a href="#scale/2" class="detail-link" title="Link to this function">
@@ -978,7 +1131,7 @@ the elements of the provided matrices.</p>
     <a href="#transpose/1" class="detail-link" title="Link to this function">
       <i class="icon-link"></i>
     </a>
-    <span class="signature">transpose(cells)</span>
+    <span class="signature">transpose(m)</span>
       
   </div>
   
@@ -999,6 +1152,28 @@ becomes the first column, the second row becomes the second column, etc.</p>
 <p>  iex&gt; Matrix.transpose( Matrix.seq(3,2) )
   [[1, 3, 5], [2, 4, 6]]</p>
 
+  </section>
+</div>
+<div class="detail" id="ulp_diff/2">
+  <div class="detail-header">
+    <a href="#ulp_diff/2" class="detail-link" title="Link to this function">
+      <i class="icon-link"></i>
+    </a>
+    <span class="signature">ulp_diff(a, b)</span>
+      
+  </div>
+  
+    <div class="specs">
+      <h4 class="specs-title">Specs</h4>
+      <div class="specs-list">
+        
+          <pre><code class="elixir">ulp_diff(float, float) :: integer</code></pre>
+        
+      </div>
+    </div>
+  
+  <section class="docstring">
+    
   </section>
 </div>
 <div class="detail" id="zeros/2">

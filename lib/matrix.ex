@@ -1,14 +1,15 @@
 defmodule Matrix do
   @moduledoc """
   *Matrix* is a linear algebra library for manipulating dense matrices. Its
-  design goals are to be reasonably efficient in terms of both memory usage and
-  computations.  Unfortunately there is a trade off between memory efficiency
-  and computational efficiency.  Where these requirements conflict *Matrix*
-  will use the more computationally efficient algorithm.
+  primary design goal is ease of use.  It is desirable that the *Matrix* package
+  interact with standard Elixir language constructs and other packages.  The
+  underlying storage mechanism is, therefore, Elixir lists.
 
-  A secondary design consideration is for ease of use.  It is desirable that the
-  *Matrix* package interact with standard Elixir language constructs and other
-  packages.  The underlying storage mechanism is, therefore, Elixir lists.
+  A secondary design consideration is for the module to be reasonably efficient
+  in terms of both memory usage and computations.  Unfortunately there is a
+  trade off between memory efficiency and computational efficiency.  Where these
+  requirements conflict *Matrix* will use the more computationally efficient
+  algorithm.
 
   Each matrix is represented as a "list of lists" whereby a 3x4 matrix is
   represented by a list of three items, with each item a list of 4 values.
@@ -30,6 +31,10 @@ defmodule Matrix do
   @type row :: [number]
   @type matrix :: [row]
 
+  @comparison_epsilon 1.0e-12
+  @comparison_max_ulp 1
+
+
 
   @doc """
     Returns a new matrix of the specified size (number of rows and columns).
@@ -50,6 +55,10 @@ defmodule Matrix do
   def new(rows, cols, val \\ 0) do
     for _r <- 1..rows, do: make_row(cols,val)
   end
+
+  def make_row(0, _val), do: []
+  def make_row(n, val), do: [val] ++ make_row(n-1, val)
+
 
   @doc """
     Returns a new matrix of the specified size (number of rows and columns)
@@ -90,6 +99,10 @@ defmodule Matrix do
     for _r <- 1..rows, do: make_random_row(cols)
   end
 
+  def make_random_row(0), do: []
+  def make_random_row(n), do: [:random.uniform] ++ make_random_row(n-1)
+
+
 
 
   @doc """
@@ -104,9 +117,7 @@ defmodule Matrix do
         [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]]
     """
   @spec zeros(integer, integer) :: matrix
-  def zeros(rows, cols) do
-    new(rows, cols, 0)
-  end
+  def zeros(rows, cols), do: new(rows, cols, 0)
 
 
   @doc """
@@ -121,9 +132,36 @@ defmodule Matrix do
         [[1, 1, 1, 1], [1, 1, 1, 1], [1, 1, 1, 1]]
     """
   @spec ones(integer, integer) :: matrix
-  def ones(rows, cols) do
-    new(rows, cols, 1)
+  def ones(rows, cols), do: new(rows, cols, 1)
+
+
+  @doc """
+    Returns a new square "diagonal" matrix whose elements are zero except for
+    the diagonal.  The diagonal elements will be composed of the supplied list
+
+    #### See also
+    [new/3](#new/3), [ones/2](#ones/2), [ident/1](#ident/1)
+
+    #### Examples
+        iex> Matrix.diag([1,2,3])
+        [[1, 0, 0], [0, 2, 0], [0, 0, 3]]
+    """
+  @spec diag([number]) :: matrix
+  def diag(d) do
+    rows = length(d)
+    Enum.zip( d, 0..rows-1 )
+    |> Enum.map(fn({v,s})->
+                  row = [v]++Matrix.make_row(rows-1,0)
+                  rrotate(row, s)
+                end)
   end
+  def lrotate(list, 0), do: list
+  def lrotate([head|list], number), do: lrotate(list ++ [head], number - 1)
+  def rrotate(list, number), do:
+    list
+    |> Enum.reverse
+    |> lrotate(number)
+    |> Enum.reverse
 
 
   @doc """
@@ -133,18 +171,15 @@ defmodule Matrix do
     parameter is required.
 
     #### See also
-    [new/3](#new/3), [ones/2](#ones/2), [rand/2](#rand/2)
+    [diag/1](#diag/1), [ones/2](#ones/2), [rand/2](#rand/2)
 
     #### Examples
         iex> Matrix.ident(3)
         [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
     """
   @spec ident(integer) :: matrix
-  def ident(rows) do
-    # cols = rows (square matrix)
-    x = zeros(rows,rows)
-    for r <- Enum.zip(x,0..rows-1), do: List.replace_at( elem(r,0), elem(r,1), 1)
-  end
+  def ident(rows), do: diag(make_row(rows,1))
+
 
 
   @doc """
@@ -187,7 +222,7 @@ defmodule Matrix do
 
 
   @doc """
-    Returns a value of the specified element  (row and column) of the given
+    Returns the value of the specified element (row and column) of the given
     matrix (x).  The row and column indices are zero-based.
 
     #### See also
@@ -199,8 +234,7 @@ defmodule Matrix do
     """
   @spec elem(matrix, integer, integer) :: number
   def elem(x, row, col) do
-    row_vals = Enum.at(x,row)
-    Enum.at(row_vals, col)
+    Enum.at( Enum.at(x,row), col )
   end
 
 
@@ -272,19 +306,20 @@ defmodule Matrix do
     #### Examples
         iex> Matrix.mult( Matrix.seq(2,2), Matrix.seq(2,2) )
         [[7, 10], [15, 22]]
-
-        iex> _ = :random.seed(12345)
-        iex> Matrix.mult( Matrix.rand(3,3), Matrix.rand(3,3) )
-        [[1.0381005406028176, 0.7212441594338046, 0.9307137121837732],
-         [0.6255442219186653, 0.4956710926346579, 0.574699071565491],
-         [0.66479248303266, 0.7764927657589071, 1.0048634412082678]]
     """
   @spec mult(matrix, matrix) :: matrix
   def mult(x, y) do
     trans_y = transpose(y)
     Enum.map(x, fn(row)->
-                  Enum.map(trans_y, &dot_product(row, &1))
-                end)
+                      Enum.map(trans_y, &dot_product(row, &1))
+                    end)
+  end
+
+  defp dot_product(r1, _r2) when r1 == [], do: 0
+  defp dot_product(r1, r2) do
+    [h1|t1] = r1
+    [h2|t2] = r2
+    (h1*h2) + dot_product(t1, t2)
   end
 
 
@@ -299,9 +334,17 @@ defmodule Matrix do
       [[1, 3, 5], [2, 4, 6]]
     """
   @spec transpose(matrix) :: matrix
-  def transpose(cells) do
-    swap_rows_cols(cells)
+  def transpose(m) do
+    swap_rows_cols(m)
   end
+
+  defp swap_rows_cols( [h|_t] ) when h==[], do: []
+  defp swap_rows_cols(rows) do
+    firsts = Enum.map(rows, fn(x) -> hd(x) end) # first element of each row
+    rest = Enum.map(rows, fn(x) -> tl(x) end)   # remaining elements of each row
+    [firsts | swap_rows_cols(rest)]
+  end
+
 
 
 
@@ -315,7 +358,7 @@ defmodule Matrix do
   #### Examples
       iex> x = Matrix.rand(5,5)
       iex> res = Matrix.mult( x, Matrix.inv(x) )
-      iex> Matrix.almost_equal(res,[[1,0,0],[0,1,0],[0,0,1]],1.0e-10)
+      iex> Matrix.almost_equal(res,[[1,0,0],[0,1,0],[0,0,1]])
       true
     """
   @spec inv(matrix) :: matrix
@@ -325,7 +368,7 @@ defmodule Matrix do
 
     {yl,yr} = desupplement(y)
     z = supplement( full_flip(yl), full_flip(yr) )
-    {_zzl,zzr} = desupplement( row_reduce(z) )
+    {_,zzr} = desupplement( row_reduce(z) )
     full_flip(zzr)
   end
 
@@ -374,17 +417,17 @@ defmodule Matrix do
   if all elements are within the provided epsilon.
 
   #### Examples
-      iex> Matrix.almost_equal( [[1.00001, 0], [0, 0.999999]], [[1,0], [0,1]], 1.0e-6 )
+      iex> Matrix.almost_equal( [[1, 0], [0, 1]], [[1,0], [0,1+1.0e-12]] )
       false
 
-      iex> Matrix.almost_equal( [[1.00001, 0], [0, 0.999999]], [[1,0], [0,1]], 1.0e-3 )
+      iex> Matrix.almost_equal( [[1, 0], [0, 1]], [[1,0], [0,1+0.5e-12]] )
       true
   """
-  @spec almost_equal(matrix, matrix, number) :: matrix
-  def almost_equal(x, y, eps) do
-    x = Enum.zip(x,y)
-        |> Enum.map(fn({r1,r2})->rows_almost_equal(r1, r2, eps) end)
-    Enum.all?(x)
+  @spec almost_equal(matrix, matrix) :: matrix
+  def almost_equal(x, y) do
+    Enum.zip(x,y)
+    |> Enum.map(fn({r1,r2})->rows_almost_equal(r1, r2) end)
+    |> Enum.all?
   end
 
 
@@ -412,8 +455,8 @@ defmodule Matrix do
   @spec pretty_print(matrix, char_list, char_list) :: atom
   def pretty_print(m, fmt\\"%d", sep\\"") do
     str = m
-    |> Enum.map(fn(r)->show_row(r,fmt,sep) <> "\n" end)
-    |> Enum.join("")
+          |> Enum.map(fn(r)->show_row(r,fmt,sep) <> "\n" end)
+          |> Enum.join("")
     IO.puts(str)
   end
 
@@ -449,32 +492,6 @@ defmodule Matrix do
   # Private supporting functions
   #################
 
-  #
-  # These functions create and return a row populated with various values.  They
-  # are used by the creation routine (e.g., new).  They call the recursive
-  # element adding functions "add_row_element" to continually append new elements to
-  # the row.  Note that this was found to be faster than a simple list
-  # comprehension or Enum.map, at least using Erlang/OTP 18 and Elixir 1.1.1
-  #
-  defp make_row(n, val) do
-    # This was found to be slower than the recursive call
-    #for _r <- 1..n, do: val
-    add_row_element([],n,val)
-  end
-  defp add_row_element(r,0,_), do: r
-  defp add_row_element(r,n,val) do
-    [val] ++ add_row_element(r,n-1,val)
-  end
-
-  defp make_random_row(n) do
-    #for _r <- 1..n, do: :random.uniform
-    add_random_row_element([],n)
-  end
-  defp add_random_row_element(r,0), do: r
-  defp add_random_row_element(r,n) do
-    [:random.uniform] ++ add_random_row_element(r,n-1)
-  end
-
 
 
   #
@@ -498,35 +515,11 @@ defmodule Matrix do
     [h1-h2] ++ subtract_rows(t1,t2)
   end
 
-
   defp emult_rows(r1, r2) when r1 == []  or  r2 == [], do: []
   defp emult_rows(r1, r2) do
     [h1|t1] = r1
     [h2|t2] = r2
     [h1*h2] ++ emult_rows(t1,t2)
-  end
-
-
-  #
-  # Recursive support function for "transpose".  This function separates out the
-  # first element of each row and forms it into a new row.  It then calls itself
-  # with the remaining elements to form the remaining swapped rows.
-  #
-  defp swap_rows_cols( [h|_t] ) when h==[], do: []
-  defp swap_rows_cols(rows) do
-    firsts = Enum.map(rows, fn(x) -> hd(x) end) # first element of each row
-    rest = Enum.map(rows, fn(x) -> tl(x) end)   # remaining elements of each row
-    [firsts | swap_rows_cols(rest)]
-  end
-
-  #
-  # Support function for matrix multiply.  Computes the dot product of the
-  # supplied lists.  Presumably r1 and r2 are rows of a matrix.
-  #
-  defp dot_product(r1, r2) do
-    Enum.zip(r1, r2)
-    |> Enum.map(fn({x, y}) -> x * y end)
-    |> Enum.sum
   end
 
 
@@ -608,19 +601,6 @@ defmodule Matrix do
   end
 
 
-  #
-  # The following functions are used for floating point comparison of matrices.
-  #
-  # Compares two rows as being (approximately) equal.
-  defp rows_almost_equal(r1, r2, eps) do
-    x = Enum.zip(r1,r2)
-        |> Enum.map(fn({x,y})->vals_almost_equal(x, y, eps) end)
-    Enum.all?(x)
-  end
-  # Compares two floats as being (approximately) equal.
-  defp vals_almost_equal(x, y, eps) do
-    abs(x-y) < eps
-  end
 
 
   #
@@ -643,5 +623,64 @@ defmodule Matrix do
     |> Enum.join(sep)
     "|" <> str <> "|"
   end
+
+
+
+  #
+  # The following functions are used for floating point comparison of matrices.
+  #
+  # Compares two rows as being (approximately) equal.
+  defp rows_almost_equal(r1, r2) do
+    x = Enum.zip(r1,r2)
+        |> Enum.map(fn({x,y})->vals_almost_equal(x, y) end)
+    Enum.all?(x)
+  end
+  # Compares two floats as being (approximately) equal.
+  defp vals_almost_equal(x, y) do
+    close_enough?(x, y, @comparison_epsilon, @comparison_max_ulp)
+  end
+
+
+  @doc """
+  Code borrowed from the ExMath library and duplicated here to reduce
+  dependencies.  ExMath is copyright © 2015 Ookami Kenrou <ookamikenrou@gmail.com>
+
+  Equality comparison for floating point numbers, based on
+  [this blog post](https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/)
+  by Bruce Dawson.
+  """
+  @spec close_enough?(number, number, number, non_neg_integer) :: boolean
+  def close_enough?(a, b, epsilon, max_ulps) do
+    a = :erlang.float a
+    b = :erlang.float b
+
+    cond do
+      abs(a - b) <= epsilon -> true
+
+      signbit(a) != signbit(b) -> false
+
+      ulp_diff(a, b) <= max_ulps -> true
+
+      true -> false
+    end
+  end
+
+  @spec signbit(float) :: boolean
+  defp signbit(x) do
+    case <<x :: float>> do
+      <<1 :: 1, _ :: bitstring>> -> true
+      _ -> false
+    end
+  end
+
+  @spec ulp_diff(float, float) :: integer
+  def ulp_diff(a, b), do: abs(as_int(a) - as_int(b))
+
+  @spec as_int(float) :: non_neg_integer
+  defp as_int(x) do
+    <<int :: 64>> = <<x :: float>>
+    int
+  end
+
 
 end

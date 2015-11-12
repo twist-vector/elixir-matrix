@@ -3,7 +3,8 @@ defmodule Matrix.Mixfile do
 
   def project do
     [app: :matrix,
-     version: "0.0.1",
+     version: "0.3.0",
+     description: "",
      elixir: "~> 1.1",
      build_embedded: Mix.env == :dev,
      start_permanent: Mix.env == :dev,
