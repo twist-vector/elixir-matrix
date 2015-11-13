@@ -42,7 +42,6 @@ mix docs
 This will generate the HTML documentation and place it into the `doc` subdirectory.
 
 ## [Examples](Examples)
-<a name="examples"></a>
 ```elixir
 iex> Matrix.new(3, 4)
 [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]]
