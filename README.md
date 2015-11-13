@@ -34,14 +34,15 @@ in the [examples section](#examples).
 ## Documentation
 
 Documentation for the package is available online via Hex at
-**[http://hexdocs.pm/matrix](http://hexdocs.pm/matrix)**.  You can also generate
+[http://hexdocs.pm/matrix](http://hexdocs.pm/matrix).  You can also generate
 local docs via the mix task
 ```elixir
-mic docs
+mix docs
 ```
 This will generate the HTML documentation and place it into the `doc` subdirectory.
 
-## <a name="examples"></a>[Examples](Examples)
+## [Examples](Examples)
+<a name="examples"></a>
 ```elixir
 iex> Matrix.new(3, 4)
 [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]]
