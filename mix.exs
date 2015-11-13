@@ -35,8 +35,8 @@ defmodule Matrix.Mixfile do
     [# These are the default files included in the package
      maintainers: ["Tom Krauss"],
      licenses: ["Apache 2.0"],
-     links: %{"GitHub" => "https://github.com/ericmj/postgrex",
-              "Docs" => "http://ericmj.github.io/postgrex/"}]
+     links: %{"GitHub" => "https://github.com/twist-vector/elixir-matrix.git",
+              "Docs" => "http://http://hexdocs.pm/matrix"}]
   end
 
 end
