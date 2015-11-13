@@ -34,6 +34,9 @@ defmodule Matrix do
   @comparison_epsilon 1.0e-12
   @comparison_max_ulp 1
 
+  @compile :native
+  @compile {:hipe, [:o3]}
+
 
 
   @doc """
@@ -423,10 +426,10 @@ defmodule Matrix do
       iex> Matrix.almost_equal( [[1, 0], [0, 1]], [[1,0], [0,1+0.5e-12]] )
       true
   """
-  @spec almost_equal(matrix, matrix) :: matrix
-  def almost_equal(x, y) do
+  @spec almost_equal(matrix, matrix, number, number) :: matrix
+  def almost_equal(x, y, eps \\ @comparison_epsilon, max_ulp \\ @comparison_max_ulp) do
     Enum.zip(x,y)
-    |> Enum.map(fn({r1,r2})->rows_almost_equal(r1, r2) end)
+    |> Enum.map(fn({r1,r2})->rows_almost_equal(r1, r2, eps, max_ulp) end)
     |> Enum.all?
   end
 
@@ -630,16 +633,11 @@ defmodule Matrix do
   # The following functions are used for floating point comparison of matrices.
   #
   # Compares two rows as being (approximately) equal.
-  defp rows_almost_equal(r1, r2) do
+  defp rows_almost_equal(r1, r2, eps, max_ulp) do
     x = Enum.zip(r1,r2)
-        |> Enum.map(fn({x,y})->vals_almost_equal(x, y) end)
+        |> Enum.map(fn({x,y})->close_enough?(x, y, eps, max_ulp) end)
     Enum.all?(x)
   end
-  # Compares two floats as being (approximately) equal.
-  defp vals_almost_equal(x, y) do
-    close_enough?(x, y, @comparison_epsilon, @comparison_max_ulp)
-  end
-
 
   @doc """
   Code borrowed from the ExMath library and duplicated here to reduce
