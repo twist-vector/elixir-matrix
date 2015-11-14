@@ -205,9 +205,11 @@ defmodule Matrix do
 
 
   @doc """
-    Returns a matrix that is a copy of the supplied matrix (x) with the specified
-    element (row and column) set to the specified value (val).  The row and
-    column indices are zero-based.
+    Returns a matrix that is a copy of the supplied matrix (x) with the
+    specified element (row and column) set to the specified value (val).  The
+    row and column indices are zero-based.  Negative indices indicate an offset
+    from the end of the row or column. If an index is out of bounds, the
+    original matrix is returned.
 
     #### See also
     [elem/3](#elem/3)
@@ -226,7 +228,8 @@ defmodule Matrix do
 
   @doc """
     Returns the value of the specified element (row and column) of the given
-    matrix (x).  The row and column indices are zero-based.
+    matrix (x).  The row and column indices are zero-based.  Returns `default`
+    if either row or col are out of bounds.
 
     #### See also
     [set/4](#set/4)
@@ -236,15 +239,19 @@ defmodule Matrix do
         1
     """
   @spec elem(matrix, integer, integer) :: number
-  def elem(x, row, col) do
-    Enum.at( Enum.at(x,row), col )
+  def elem(x, row, col, default \\ nil) do
+    row_vals = Enum.at(x,row,nil)
+    if row_vals == nil, do: default, else: Enum.at(row_vals, col, default)
   end
 
 
 
   @doc """
     Returns a new matrix whose elements are the sum of the elements of
-    the provided matrices.
+    the provided matrices.  If the matrices are of differing sizes, the
+    returned matrix will be the size and dimensions of the "overlap" between
+    them.  For instance, the sum of a 3x3 matrix with a 2x2 matrix will be
+    2x2.  The sum of a 3x1 matrix with a 1x3 matrix will be 1x1.
 
     #### See also
     [sub/2](#sub/2), [emult/2](#emult/2)
@@ -252,6 +259,12 @@ defmodule Matrix do
     #### Examples
         iex> Matrix.add( Matrix.ident(3), Matrix.ident(3) )
         [[2, 0, 0], [0, 2, 0], [0, 0, 2]]
+
+        iex> Matrix.add( Matrix.ones(3,3), Matrix.ones(2,2) )
+        [[2, 2], [2, 2]]
+
+        iex> Matrix.add( Matrix.ones(3,1), Matrix.ones(1,3) )
+        [[2]]
     """
   @spec add(matrix, matrix) :: matrix
   def add(x, y) do
@@ -262,8 +275,11 @@ defmodule Matrix do
 
 
   @doc """
-    Returns a new matrix whose elements are the difference (subtraction) of
-    the elements of the provided matrices.
+    Returns a new matrix whose elements are the difference (subtraction) of the
+    elements of the provided matrices.  If the matrices are of differing sizes,
+    the returned matrix will be the size and dimensions of the "overlap" between
+    them.  For instance, the difference of a 3x3 matrix with a 2x2 matrix will
+    be 2x2. The difference of a 3x1 matrix with a 1x3 matrix will be 1x1.
 
     #### See also
     [add/2](#add/2), [emult/2](#emult/2)
@@ -271,6 +287,12 @@ defmodule Matrix do
     #### Examples
         iex> Matrix.sub( Matrix.ident(3), Matrix.ones(3,3) )
         [[0, -1, -1], [-1, 0, -1], [-1, -1, 0]]
+
+        iex> Matrix.sub( Matrix.ones(3,3), Matrix.ones(2,2) )
+        [[0, 0], [0, 0]]
+
+        iex> Matrix.sub( Matrix.ones(3,1), Matrix.ones(1,3) )
+        [[0]]
     """
   @spec sub(matrix, matrix) :: matrix
   def sub(x, y) do
@@ -281,9 +303,12 @@ defmodule Matrix do
 
 
   @doc """
-    Returns a new matrix whose elements are the element-by-element multiply
-    of the elements of the provided matrices.  Note that this is not the
-    linear algebra matrix multiply.
+    Returns a new matrix whose elements are the element-by-element multiply of
+    the elements of the provided matrices.  Note that this is not the linear
+    algebra matrix multiply.  If the matrices are of differing sizes, the
+    returned matrix will be the size and dimensions of the "overlap" between
+    them.  For instance, the element multiply of a 3x3 matrix with a 2x2 matrix
+    will be 2x2, for a 3x1 matrix with a 1x3 matrix will be 1x1.
 
     #### See also
     [add/2](#add/2), [sub/2](#sub/2)
@@ -291,6 +316,12 @@ defmodule Matrix do
     #### Examples
         iex> Matrix.emult( Matrix.new(3,3,2), Matrix.new(3,3,-2) )
         [[-4, -4, -4], [-4, -4, -4], [-4, -4, -4]]
+
+        iex> Matrix.emult( Matrix.ones(3,3), Matrix.ones(2,2) )
+        [[1, 1], [1, 1]]
+
+        iex> Matrix.emult( Matrix.ones(3,1), Matrix.ones(1,3) )
+        [[1]]
     """
   @spec emult(matrix, matrix) :: matrix
   def emult(x, y) do
@@ -301,7 +332,12 @@ defmodule Matrix do
 
   @doc """
     Returns a new matrix which is the linear algebra matrix multiply
-    of the provided matrices.
+    of the provided matrices.  It is required that the number of columns
+    of the first matrix (x) be equal to the number of rows of the second
+    matrix (y).  If x is an NxM and y is an MxP, the returned matrix product
+    xy is NxP.  If the number of columns of x does not equal the number of
+    rows of y an `ArgumentError` exception is thrown with the message "sizes
+    incompatible"
 
     #### See also
     [emult/2](#emult/2)
@@ -309,9 +345,21 @@ defmodule Matrix do
     #### Examples
         iex> Matrix.mult( Matrix.seq(2,2), Matrix.seq(2,2) )
         [[7, 10], [15, 22]]
+
+        iex> Matrix.mult( Matrix.ones(3,2), Matrix.ones(2,3) )
+        [[2, 2, 2], [2, 2, 2], [2, 2, 2]]
+
+        iex> Matrix.mult( Matrix.ones(3,2), Matrix.ones(3,2) )
+        ** (ArgumentError) sizes incompatible
     """
   @spec mult(matrix, matrix) :: matrix
   def mult(x, y) do
+
+    {_rx,cx} = size(x)
+    {ry,_cy} = size(y)
+    if (cx != ry), do:
+      raise ArgumentError, message: "sizes incompatible"
+
     trans_y = transpose(y)
     Enum.map(x, fn(row)->
                       Enum.map(trans_y, &dot_product(row, &1))
