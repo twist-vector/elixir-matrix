@@ -34,10 +34,6 @@ defmodule Matrix do
   @comparison_epsilon 1.0e-12
   @comparison_max_ulp 1
 
-  @compile :native
-  @compile {:hipe, [:o3]}
-
-
 
   @doc """
     Returns a new matrix of the specified size (number of rows and columns).
