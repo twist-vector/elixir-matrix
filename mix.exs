@@ -15,12 +15,11 @@ defmodule Matrix.Mixfile do
   #
   # Type "mix help compile.app" for more information
   def application do
-    [applications: [:logger]]
+    [applications: [:logger, :exprintf]]
   end
 
   defp deps do
-    [{:earmark, "~> 0.1"},
-     {:ex_doc, github: "elixir-lang/ex_doc"},
+    [{:ex_doc, "~> 0.14", only: :dev},
      {:exprintf, "~> 0.1"}]
   end
 
