@@ -25,7 +25,7 @@ defmodule Matrix do
       [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]
   """
   @vsn 1
-  @doc """
+  @typedoc """
       A list of values representing a matrix row.
   """
   @type row :: [number]
@@ -84,11 +84,11 @@ defmodule Matrix do
     numbers between 0 and 1.
 
     #### Examples
-        iex> _ = :random.seed(12345)
+        iex> _ = :rand.seed(:exs1024, {123, 123534, 345345})
         iex> Matrix.rand(3,3)
-        [[0.07797290969719865, 0.3944785128151924, 0.9781224924937147],
-         [1.3985610037403617e-4, 0.5536761216397539, 0.35476183770551284],
-         [0.7021763747372531, 0.5537966721193639, 0.1607491687700906]]
+        [[0.5820506340260994, 0.6739535732076178, 0.9178030245386003],
+         [0.7402049520743949, 0.5589108995145826, 0.8687305849540213],
+         [0.8851580858928109, 0.988438251464987, 0.18105169154176423]]
 
     #### See also
     [new/3](#new/3), [ones/2](#ones/2), [zeros/2](#zeros/2)
@@ -99,7 +99,7 @@ defmodule Matrix do
   end
 
   def make_random_row(0), do: []
-  def make_random_row(n), do: [:random.uniform] ++ make_random_row(n-1)
+  def make_random_row(n), do: [:rand.uniform] ++ make_random_row(n-1)
 
 
 
