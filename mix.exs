@@ -4,10 +4,10 @@ defmodule Matrix.Mixfile do
   def project do
     [app: :matrix,
      version: "0.3.1",
-     description: description,
-     package: package,
+     description: description(),
+     package: package(),
      elixir: "~> 1.1",
-     deps: deps,
+     deps: deps(),
      docs: [extras: []]]
   end
 
