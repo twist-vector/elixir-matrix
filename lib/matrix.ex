@@ -407,7 +407,7 @@ defmodule Matrix do
       iex> res = Matrix.mult( x, Matrix.inv(x) )
       iex> Matrix.almost_equal(res,[[1,0,0],[0,1,0],[0,0,1]])
       true
-    """
+  """
   @spec inv(matrix) :: matrix
   def inv(x) do
     {rows,_cols} = size(x)
@@ -499,7 +499,7 @@ defmodule Matrix do
   Returns a string which is a "pretty" representation of the supplied
   matrix.
   """
-  @spec pretty_print(matrix, char_list, char_list) :: atom
+  @spec pretty_print(matrix, charlist, charlist) :: atom
   def pretty_print(m, fmt\\"%d", sep\\"") do
     str = m
           |> Enum.map(fn(r)->show_row(r,fmt,sep) <> "\n" end)
