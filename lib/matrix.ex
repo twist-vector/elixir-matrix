@@ -499,7 +499,7 @@ defmodule Matrix do
   Returns a string which is a "pretty" representation of the supplied
   matrix.
   """
-  @spec pretty_print(matrix, char_list, char_list) :: atom
+  @spec pretty_print(matrix, charlist, charlist) :: atom
   def pretty_print(m, fmt\\"%d", sep\\"") do
     str = m
           |> Enum.map(fn(r)->show_row(r,fmt,sep) <> "\n" end)
