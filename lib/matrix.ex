@@ -379,7 +379,7 @@ defmodule Matrix do
   #### Examples
       iex> Matrix.transpose( Matrix.seq(3,2) )
       [[1, 3, 5], [2, 4, 6]]
-    """
+  """
   @spec transpose(matrix) :: matrix
   def transpose(m) do
     swap_rows_cols(m)
@@ -407,7 +407,7 @@ defmodule Matrix do
       iex> res = Matrix.mult( x, Matrix.inv(x) )
       iex> Matrix.almost_equal(res,[[1,0,0],[0,1,0],[0,0,1]])
       true
-    """
+  """
   @spec inv(matrix) :: matrix
   def inv(x) do
     {rows,_cols} = size(x)
