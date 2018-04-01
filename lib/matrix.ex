@@ -372,14 +372,14 @@ defmodule Matrix do
 
 
   @doc """
-  Returns a new matrix whose elements are the transpose of the supplied matrix.
-  The transpose essentially swaps rows for columns - that is, the first row
-  becomes the first column, the second row becomes the second column, etc.
+    Returns a new matrix whose elements are the transpose of the supplied matrix.
+    The transpose essentially swaps rows for columns - that is, the first row
+    becomes the first column, the second row becomes the second column, etc.
 
-  #### Examples
+      #### Examples
       iex> Matrix.transpose( Matrix.seq(3,2) )
       [[1, 3, 5], [2, 4, 6]]
-    """
+  """
   @spec transpose(matrix) :: matrix
   def transpose(m) do
     swap_rows_cols(m)
