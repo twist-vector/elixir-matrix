@@ -470,7 +470,7 @@ defmodule Matrix do
       iex> Matrix.almost_equal( [[1, 0], [0, 1]], [[1,0], [0,1+0.5e-12]] )
       true
   """
-  @spec almost_equal(matrix, matrix, number, number) :: matrix
+  @spec almost_equal(matrix, matrix, number, number) :: boolean
   def almost_equal(x, y, eps \\ @comparison_epsilon, max_ulp \\ @comparison_max_ulp) do
     Enum.zip(x,y)
     |> Enum.map(fn({r1,r2})->rows_almost_equal(r1, r2, eps, max_ulp) end)
