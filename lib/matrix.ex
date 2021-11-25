@@ -494,6 +494,33 @@ defmodule Matrix do
     Enum.map(x, fn(r)->scale_row(r,s) end)
   end
 
+  @doc """
+  Reshapes vector into matrix and matrix into vector
+
+  #### Examples
+      iex> Matrix.reshape([1,2,3,4,5,6], {2, 3})
+      [[1,2], [3,4], [5,6]]
+
+      iex> Matrix.reshape([[1,2], [3,4], [5,6]], 6)
+      [1,2,3,4,5,6]
+  """
+  def reshape(vector, {row, column}) do
+    if length(vector) != row * column do
+      raise ArgumentError, message: "incompatible shape"
+    end
+
+    Enum.chunk_every(vector, row)
+  end
+
+  def reshape(m, length) do
+    vector = List.flatten(m)
+
+    if length(vector) != length do
+      raise ArgumentError, message: "incompatible shape"
+    end
+
+    vector
+  end
 
   @doc """
   Returns a string which is a "pretty" representation of the supplied
