@@ -18,4 +18,9 @@ defmodule MatrixTest do
     assert Matrix.reshape(m, 6) == v
   end
 
+  test "map" do
+    m = Matrix.zeros(2, 2)
+        |> Matrix.map(fn x -> x + 1 end)
+    assert m == [[1, 1], [1, 1]]
+  end
 end

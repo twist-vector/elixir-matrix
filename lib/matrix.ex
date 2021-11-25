@@ -495,6 +495,18 @@ defmodule Matrix do
   end
 
   @doc """
+  Returns a new matrix where each element is the result of invoking `f` on each
+  element of the matrix `x`
+
+  #### Examples
+      iex> Matrix.map(Matrix.zeros(3, 3), fn x -> x + 4 end)
+      [[4,4,4], [4,4,4], [4,4,4]]
+  """
+  def map(x, f) do
+    Enum.map(x, fn r -> map_row(r, f) end)
+  end
+
+  @doc """
   Reshapes vector into matrix and matrix into vector
 
   #### Examples
@@ -634,7 +646,14 @@ defmodule Matrix do
   # Multiplies a row by a (scalar) constant.
   #
   defp scale_row(r, v) do
-    Enum.map(r, fn(x) -> x * v end)
+    map_row(r, fn(x) -> x * v end)
+  end
+
+  #
+  # Maps over a row
+  #
+  defp map_row(r, f) do
+    Enum.map(r, f)
   end
 
   #
