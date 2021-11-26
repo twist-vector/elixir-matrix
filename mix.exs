@@ -3,7 +3,7 @@ defmodule Matrix.Mixfile do
 
   def project do
     [app: :matrix,
-     version: "0.3.1",
+     version: "0.3.2",
      description: description(),
      package: package(),
      elixir: "~> 1.1",
@@ -19,7 +19,7 @@ defmodule Matrix.Mixfile do
   end
 
   defp deps do
-    [{:ex_doc, "~> 0.14", only: :dev},
+    [{:ex_doc, "~> 0.26", only: :dev},
      {:exprintf, "~> 0.1"}]
   end
 

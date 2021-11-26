@@ -494,6 +494,45 @@ defmodule Matrix do
     Enum.map(x, fn(r)->scale_row(r,s) end)
   end
 
+  @doc """
+  Returns a new matrix where each element is the result of invoking `f` on each
+  element of the matrix `x`
+
+  #### Examples
+      iex> Matrix.map(Matrix.zeros(3, 3), fn x -> x + 4 end)
+      [[4,4,4], [4,4,4], [4,4,4]]
+  """
+  def map(x, f) do
+    Enum.map(x, fn r -> map_row(r, f) end)
+  end
+
+  @doc """
+  Reshapes vector into matrix and matrix into vector
+
+  #### Examples
+      iex> Matrix.reshape([1,2,3,4,5,6], {2, 3})
+      [[1,2], [3,4], [5,6]]
+
+      iex> Matrix.reshape([[1,2], [3,4], [5,6]], 6)
+      [1,2,3,4,5,6]
+  """
+  def reshape(vector, {row, column}) do
+    if length(vector) != row * column do
+      raise ArgumentError, message: "incompatible shape"
+    end
+
+    Enum.chunk_every(vector, row)
+  end
+
+  def reshape(m, length) do
+    vector = List.flatten(m)
+
+    if length(vector) != length do
+      raise ArgumentError, message: "incompatible shape"
+    end
+
+    vector
+  end
 
   @doc """
   Returns a string which is a "pretty" representation of the supplied
@@ -607,7 +646,14 @@ defmodule Matrix do
   # Multiplies a row by a (scalar) constant.
   #
   defp scale_row(r, v) do
-    Enum.map(r, fn(x) -> x * v end)
+    map_row(r, fn(x) -> x * v end)
+  end
+
+  #
+  # Maps over a row
+  #
+  defp map_row(r, f) do
+    Enum.map(r, f)
   end
 
   #
