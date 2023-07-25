@@ -2,13 +2,15 @@ defmodule Matrix.Mixfile do
   use Mix.Project
 
   def project do
-    [app: :matrix,
-     version: "0.3.1",
-     description: description(),
-     package: package(),
-     elixir: "~> 1.1",
-     deps: deps(),
-     docs: [extras: []]]
+    [
+      app: :matrix,
+      version: "0.3.3",
+      description: description(),
+      package: package(),
+      elixir: "~> 1.15",
+      deps: deps(),
+      docs: [extras: []]
+    ]
   end
 
   # Configuration for the OTP application
@@ -19,8 +21,7 @@ defmodule Matrix.Mixfile do
   end
 
   defp deps do
-    [{:ex_doc, "~> 0.14", only: :dev},
-     {:exprintf, "~> 0.1"}]
+    [{:ex_doc, "~> 0.30", only: :dev}, {:exprintf, "~> 0.2"}]
   end
 
   defp description do
@@ -31,11 +32,14 @@ defmodule Matrix.Mixfile do
   end
 
   defp package do
-    [# These are the default files included in the package
-     maintainers: ["Tom Krauss"],
-     licenses: ["Apache 2.0"],
-     links: %{"GitHub" => "https://github.com/twist-vector/elixir-matrix.git",
-              "Docs" => "http://http://hexdocs.pm/matrix"}]
+    # These are the default files included in the package
+    [
+      maintainers: ["Tom Krauss"],
+      licenses: ["Apache 2.0"],
+      links: %{
+        "GitHub" => "https://github.com/twist-vector/elixir-matrix.git",
+        "Docs" => "http://http://hexdocs.pm/matrix"
+      }
+    ]
   end
-
 end
