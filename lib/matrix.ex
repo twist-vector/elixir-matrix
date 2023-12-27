@@ -415,7 +415,7 @@ defmodule Matrix do
 
     {yl,yr} = desupplement(y)
     z = supplement( full_flip(yl), full_flip(yr) )
-    {_,zzr} = desupplement( row_reduce(z) )
+    {_,zzr} = desupplement( row_reduce(z, false) )
     full_flip(zzr)
   end
 
@@ -611,30 +611,78 @@ defmodule Matrix do
   end
 
   #
+  # Swap the first row of a matrix with the row having the largest
+  # absolute value in the first column.  This is the first step in
+  # in the first pass row reduction for matrix inversion.
+  #
+  defp pivot([]), do: []
+  defp pivot(rows) do
+    index = find_pivot(rows)
+    if index == 0 do
+      rows
+    else
+      [row | rest] = rows
+      swap_row(row, rest, index - 1)
+    end
+  end
+
+  #
+  # Find the index of the row in matrix with the largest absolute
+  # value in the first column.
+  #
+  defp find_pivot([]), do: 0
+  defp find_pivot(rows) do
+    {i, _max} =
+      Enum.with_index(rows, fn row, i -> {i, List.first(row)} end) |>
+      Enum.max_by(fn {_i, h} -> abs(h) end)
+    i
+  end
+
+  #
+  # Swap the supplied row with the one at position index in the rest of the matrix,
+  # returning a full matrix with the indexed row at the top, and the supplied
+  # row taking its place in the original matrix.
+  #  Example: If row == [1, 2, 3], rows == [[4, 5, 6], [7, 8, 9]], then
+  #  swap_row(row, rows, 1) == [[7, 8, 9], [4, 5, 6], [1, 2, 3]]
+  #
+  defp swap_row(row, rows, i, acc \\ []) do
+    case rows do
+      [] ->
+        Enum.reverse([row | acc])
+      [row0 | rest] ->
+        if i <= 0 do
+          [row0 | Enum.reverse([row | acc])] ++ rest
+        else
+          swap_row(row, rest, i - 1, [row0 | acc])
+        end
+    end
+  end
+
+  #
   # Uses elementary row operations to reduce the supplied matrix to row echelon
   # form.  This is the first step of matrix inversion using Gaussian elimination.
+  # It is called again, with pivot == false, for the final reduction of the
+  # original matrix to the identity in computing the inverse.
   #
-  defp row_reduce([]), do: []
-  defp row_reduce(rows) do
+  defp row_reduce(rows, pivot \\ true)
+  defp row_reduce([], _pivot), do: []
+  defp row_reduce(rows, pivot) do
+    rows = if pivot do
+      pivot(rows)
+    else
+      rows
+    end
     firsts = Enum.map(rows, fn(x) -> hd(x) end) # first element of each row
     s = hd(firsts)
-    y = if abs(s)<1.0e-10 do
-          scale_row(hd(rows), 1)
-        else
-          scale_row(hd(rows), 1/s)
-        end
+    # N.B. this will generate an ArithmeticError upon attempting to invert a
+    # singular matrix.  This is at least better than the previous version,
+    # which could silently return an incorrect result even for non-singular matrices.
+    y = scale_row(hd(rows), 1/s)
 
-    first_rest = Enum.map(tl(rows), fn(x) -> hd(x) end)
-    z = Enum.zip(tl(rows),first_rest)
-        |> Enum.map(fn({r,v}) ->
-                      if abs(v)<1.0e-10 do
-                        tl(r)
-                      else
-                        tl(subtract_rows(scale_row(r,1/v),y))
-                      end
-                    end)
-
-    [y] ++ prefix_rows(row_reduce(z), 0)
+    first_rest = tl(firsts)
+    z = Enum.zip(tl(rows),first_rest) |>
+      Enum.map(fn({r,v}) -> tl(subtract_rows(r,scale_row(y, v))) end)
+    [y] ++ prefix_rows(row_reduce(z, pivot), 0)
   end
 
   #
