@@ -400,7 +400,8 @@ defmodule Matrix do
   matrix.  If the supplied matrix is "x" then, by definition,
           x * inv(x) = I
   where I is the identity matrix.  This function uses a brute force Gaussian
-  elimination so it is not expected to be terribly fast.
+  elimination so it is not expected to be terribly fast.  It is also expected
+  to generate an ArithmeticError when passed a singular matrix.
 
   #### Examples
       iex> x = Matrix.rand(5,5)
@@ -411,6 +412,8 @@ defmodule Matrix do
       iex> res = Matrix.mult( y, Matrix.inv(y) )
       iex> Matrix.almost_equal(res, Matrix.ident(4))
       true
+      iex> Matrix.inv([[1, 2, 3], [4, 5, 6], [3, 6, 9]])
+      ** (ArithmeticError) bad argument in arithmetic expression
   """
   @spec inv(matrix) :: matrix
   def inv(x) do
