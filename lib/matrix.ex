@@ -407,6 +407,10 @@ defmodule Matrix do
       iex> res = Matrix.mult( x, Matrix.inv(x) )
       iex> Matrix.almost_equal(res,[[1,0,0],[0,1,0],[0,0,1]])
       true
+      iex> y = [[-2, -1, -6, -1], [6, 3, 6, -1], [-3, -2, 12, 8], [0, -1, -6, -8]]
+      iex> res = Matrix.mult( y, Matrix.inv(y) )
+      iex> Matrix.almost_equal(res, Matrix.ident(4))
+      true
   """
   @spec inv(matrix) :: matrix
   def inv(x) do
